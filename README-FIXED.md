@@ -2,14 +2,14 @@
 
 A **fully functional** Model Context Protocol (MCP) server that provides access to Moralis Web3 APIs through Claude Desktop and other MCP-compatible clients.
 
-> **🚀 This is the FIXED version** that resolves all critical issues from the original implementation. The server now properly handles JSON-RPC requests and delivers responses via SSE.
+> **🚀 This is the FIXED version** that resolves all critical issues from the original implementation. The server now properly handles JSON-RPC requests and delivers responses via SSE using a hybrid approach.
 
 ## 🎯 What's Fixed
 
 This version resolves the critical issues identified in the original Moralis MCP Server:
 
 - ✅ **Fixed tools/list hanging** - Now responds in ~1 second instead of hanging indefinitely
-- ✅ **Fixed SSE response delivery** - JSON-RPC responses now properly sent through SSE stream  
+- ✅ **Fixed SSE response delivery** - JSON-RPC responses now properly sent through SSE stream
 - ✅ **Fixed session management** - Proper session lifecycle and cleanup
 - ✅ **Added comprehensive error handling** - Proper JSON-RPC error responses
 - ✅ **Added request timeouts** - No more infinite hangs
@@ -17,8 +17,8 @@ This version resolves the critical issues identified in the original Moralis MCP
 
 ## 🔧 Technical Improvements
 
-- **Custom SSE Transport**: Replaced broken official transport with working custom implementation
-- **Express.js Backend**: Switched from Hono to Express for better MCP SDK compatibility  
+- **Hybrid SSE Approach**: Uses official SSE transport for stream setup + manual message handling
+- **Bypassed SDK Bug**: Worked around broken `handlePostMessage` method in official SDK
 - **Direct Handler Access**: Bypasses SDK limitations for reliable request routing
 - **Proper Response Mapping**: Ensures all JSON-RPC requests get appropriate responses
 - **58 Moralis API Tools**: All tools properly loaded and accessible
@@ -215,18 +215,18 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 The original Moralis MCP Server had a fundamental issue where the `tools/list` JSON-RPC method would hang indefinitely. This was caused by:
 
-1. **Broken SSE Transport**: The official `SSEServerTransport` wasn't properly handling request/response cycles
+1. **Broken handlePostMessage**: The official `SSEServerTransport.handlePostMessage` method was closing connections immediately after processing
 2. **Missing Response Delivery**: JSON-RPC responses weren't being sent back through the SSE stream
-3. **Session Management Issues**: Sessions were created but not properly maintained
+3. **Session Management Issues**: Sessions were created but connections were prematurely closed
 
 ### Solution
 
-This fixed version implements:
+This fixed version implements a **hybrid approach**:
 
-1. **CustomSSETransport Class**: A working SSE transport that properly implements the Transport interface
-2. **Direct Handler Access**: Bypasses SDK limitations by directly accessing MCP server request handlers  
-3. **Proper Response Routing**: Ensures JSON-RPC responses are delivered via SSE events
-4. **Session Lifecycle Management**: Proper session creation, maintenance, and cleanup
+1. **Official SSE Transport**: Uses the working parts of `SSEServerTransport` for stream setup and response sending
+2. **Manual Message Processing**: Bypasses the broken `handlePostMessage` method with custom JSON-RPC handling
+3. **Direct Handler Access**: Directly accesses MCP server's internal request handlers for reliable routing
+4. **Proper Response Routing**: Ensures JSON-RPC responses are delivered via SSE transport's `send()` method
 
 ### Verification
 

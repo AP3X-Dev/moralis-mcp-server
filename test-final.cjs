@@ -35,7 +35,7 @@ async function testMCPServerFinal() {
       fullResponse += data;
       
       // Extract session ID
-      const endpointMatch = data.match(/data: \/api\/messages\?sessionId=([a-f0-9-]+)/);
+      const endpointMatch = data.match(/data: \/messages\?sessionId=([a-f0-9-]+)/);
       if (endpointMatch && !sessionId) {
         sessionId = endpointMatch[1];
         console.log(`   ✅ Session ID extracted: ${sessionId}`);
@@ -143,7 +143,7 @@ function sendToolsListRequest(sessionId) {
   const options = {
     hostname: 'localhost',
     port: 3000,
-    path: `/api/messages?sessionId=${sessionId}`,
+    path: `/messages?sessionId=${sessionId}`,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
